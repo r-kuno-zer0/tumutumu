@@ -86,5 +86,12 @@ public class ballScript : MonoBehaviour {
 	
 	void PushToList (GameObject obj) {
 		removableBallList.Add (obj);
+		ChangeColor(obj,0.5f);
+	}
+
+	void ChangeColor(GameObject obj, float transparency){
+		SpriteRenderer ballTexture = obj.GetComponent<SpriteRenderer>();
+
+		ballTexture.color = new Color(ballTexture.color.r, ballTexture.color.g, ballTexture.b, transparency);
 	}
 }
