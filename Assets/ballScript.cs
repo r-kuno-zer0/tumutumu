@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
-
+ 
 public class ballScript : MonoBehaviour {
 	
 	public GameObject ballPrefab;
@@ -10,6 +10,10 @@ public class ballScript : MonoBehaviour {
 	private GameObject lastBall;
 	private string currentName;
 	List<GameObject> removableBallList = new List<GameObject>();
+
+	public GameObject scoreGUI;
+	private int point = 100;
+
 	
 	void Start () {
 		StartCoroutine(DropBall(50));
@@ -18,8 +22,7 @@ public class ballScript : MonoBehaviour {
 	void Update () {
 			if (Input.GetMouseButtonDown (0) && firstBall == null) {
 				OnDragStart ();
-			}　else if (Input.GetMouseButtonUp (0)) {
-				//クリックを終えた時
+			} else if (Input.GetMouseButtonUp (0)) {
 				OnDragEnd ();
 			} else if (firstBall != null) {
 				OnDragging ();
@@ -42,8 +45,7 @@ public class ballScript : MonoBehaviour {
 		}
 	}
 	
-	private void OnDragging ()
-	{
+	private void OnDragging (){
 		RaycastHit2D hit = Physics2D.Raycast (Camera.main.ScreenToWorldPoint (Input.mousePosition), Vector2.zero);
 		if (hit.collider != null) {
 			GameObject hitObj = hit.collider.gameObject;
@@ -64,8 +66,14 @@ public class ballScript : MonoBehaviour {
 			for (int i = 0; i < remove_cnt; i++) {
 				Destroy (removableBallList [i]);
 			}
-			//ボールを新たに生成
+
+			scoreGUI.SendMessage ("AddPoint",point * remove_cnt);
+
 			StartCoroutine (DropBall (remove_cnt));
+		} else {
+			for (int i = 0; i < remove_cnt; i++) {
+				ChangeColor (removableBallList[i],1.0f);
+			}
 		}
 		firstBall = null;
 		lastBall = null;
@@ -86,12 +94,11 @@ public class ballScript : MonoBehaviour {
 	
 	void PushToList (GameObject obj) {
 		removableBallList.Add (obj);
-		ChangeColor(obj,0.5f);
+		ChangeColor(obj, 0.5f);
 	}
-
-	void ChangeColor(GameObject obj, float transparency){
+	
+	void ChangeColor (GameObject obj, float transparency) {
 		SpriteRenderer ballTexture = obj.GetComponent<SpriteRenderer>();
-
-		ballTexture.color = new Color(ballTexture.color.r, ballTexture.color.g, ballTexture.b, transparency);
+		ballTexture.color = new Color(ballTexture.color.r, ballTexture.color.g, ballTexture.color.b, transparency);
 	}
 }
