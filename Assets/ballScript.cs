@@ -1,7 +1,8 @@
 ﻿using UnityEngine;
 using System.Collections;
+using UnityEngine.UI;
 using System.Collections.Generic;
- 
+
 public class ballScript : MonoBehaviour {
 	
 	public GameObject ballPrefab;
@@ -10,23 +11,24 @@ public class ballScript : MonoBehaviour {
 	private GameObject lastBall;
 	private string currentName;
 	List<GameObject> removableBallList = new List<GameObject>();
-
-	public GameObject scoreGUI;
+	public GameObject scoreGUI;  //スコアを表示するGUI(Text)
 	private int point = 100;
-
+//********** 追記 **********//
+	public GameObject exchangeButton;
+//********** 追記 **********//
 	
 	void Start () {
 		StartCoroutine(DropBall(50));
 	}
 	
 	void Update () {
-			if (Input.GetMouseButtonDown (0) && firstBall == null) {
-				OnDragStart ();
-			} else if (Input.GetMouseButtonUp (0)) {
-				OnDragEnd ();
-			} else if (firstBall != null) {
-				OnDragging ();
-			}
+		if (Input.GetMouseButtonDown (0) && firstBall == null) {
+			OnDragStart ();
+		} else if (Input.GetMouseButtonUp (0)) {
+			OnDragEnd ();
+		} else if (firstBall != null) {
+			OnDragging ();
+		}
 	}
 	
 	private void OnDragStart() {
@@ -45,16 +47,19 @@ public class ballScript : MonoBehaviour {
 		}
 	}
 	
-	private void OnDragging (){
+	private void OnDragging ()
+	{
 		RaycastHit2D hit = Physics2D.Raycast (Camera.main.ScreenToWorldPoint (Input.mousePosition), Vector2.zero);
 		if (hit.collider != null) {
 			GameObject hitObj = hit.collider.gameObject;
 			
+			//同じブロックをクリックしている時
 			if (hitObj.name == currentName && lastBall != hitObj) {
 				float distance = Vector2.Distance (hitObj.transform.position, lastBall.transform.position);
 				if (distance < 1.0f) {
+					//削除対象のオブジェクトを格納
 					lastBall = hitObj;
-					PushToList (hitObj);
+					PushToList(hitObj);
 				}
 			}
 		}
@@ -66,7 +71,7 @@ public class ballScript : MonoBehaviour {
 			for (int i = 0; i < remove_cnt; i++) {
 				Destroy (removableBallList [i]);
 			}
-
+			//remove_cnt*100だけスコアの加点
 			scoreGUI.SendMessage ("AddPoint",point * remove_cnt);
 
 			StartCoroutine (DropBall (remove_cnt));
@@ -78,8 +83,13 @@ public class ballScript : MonoBehaviour {
 		firstBall = null;
 		lastBall = null;
 	}
-	
+
 	IEnumerator DropBall(int count) {
+//********** 追記 **********//
+		if(count == 50) {
+			StartCoroutine("RestrictPush");
+		}
+//********** 追記 **********//
 		for (int i = 0; i < count; i++) {
 			Vector2 pos = new Vector2(Random.Range(-2.0f, 2.0f), 7f);
 			GameObject ball = Instantiate(ballPrefab, pos,
@@ -91,6 +101,14 @@ public class ballScript : MonoBehaviour {
 			yield return new WaitForSeconds(0.05f);
 		}
 	}
+	
+//********** 追記 **********//
+	IEnumerator RestrictPush () {
+		exchangeButton.GetComponent<Button>().interactable = false;
+		yield return new WaitForSeconds(5.0f);
+		exchangeButton.GetComponent<Button>().interactable = true;
+	}
+//********** 追記 **********//
 	
 	void PushToList (GameObject obj) {
 		removableBallList.Add (obj);
